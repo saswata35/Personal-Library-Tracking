@@ -38,8 +38,12 @@ class JSONStorage(Storage):
             return books
         except FileNotFoundError:
             return []
-        except (OSError, UnicodeError, ValueError, TypeError, ValidationError) as exc:
-            raise StorageError(f"Cannot load {self.path}: {exc}") from exc
+        except (
+            OSError, UnicodeError, ValueError, TypeError, ValidationError
+        ) as exc:
+            raise StorageError(
+                f"Cannot load {self.path}: {exc}"
+            ) from exc
 
     def save(self, books: list[Book]) -> None:
         temporary = None
@@ -50,8 +54,13 @@ class JSONStorage(Storage):
                 prefix=".library-", suffix=".tmp", delete=False,
             ) as stream:
                 temporary = stream.name
-                json.dump({"version": 1, "books": [b.to_dict() for b in books]},
-                          stream, ensure_ascii=False, indent=2)
+                json.dump(
+                    {"version": 1, "books": [b.to_dict() for b in books]
+                     },
+                    stream,
+                    ensure_ascii=False,
+                    indent=2
+                )
                 stream.write("\n")
                 stream.flush()
                 os.fsync(stream.fileno())

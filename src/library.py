@@ -60,22 +60,28 @@ class Library:
     def search(self, query: str) -> list[Book]:
         """Match a case-insensitive substring in title or author."""
         query = query.casefold().strip()
-        return deepcopy([b for b in self._books
-                         if query in b.title.casefold() or query in b.author.casefold()])
+        return deepcopy([
+            book for book in self._books
+            if (
+                query in book.title.casefold()
+                or query in book.author.casefold()
+            )
+        ])
 
     def statistics(self) -> dict:
         """Count finished books and pages; genre ties return all winners."""
-        finished = [b for b in self._books if b.status == "finished"]
-        genres = Counter(b.genre.casefold() for b in finished)
+        finished = [book for book in self._books if book.status == "finished"]
+        genres = Counter(book.genre.casefold() for book in finished)
         highest = max(genres.values(), default=0)
         return {
             "total_books": len(self._books),
             "finished_this_year": sum(
-                date.fromisoformat(b.finish_date).year == date.today().year
-                for b in finished
+                date.fromisoformat(book.finish_date).year == date.today().year
+                for book in finished
             ),
             "average_pages_per_finished_book": (
-                sum(b.total_pages for b in finished) / len(finished) if finished else 0
+                sum(book.total_pages for book in finished) /
+                len(finished) if finished else 0
             ),
             "favorite_genres": sorted(g for g, count in genres.items() if count == highest),
         }

@@ -19,9 +19,12 @@ def display(books: list[Book]) -> None:
 
 def main() -> int:
     """Load the collection, run the menu, and handle user-facing errors."""
-    parser = argparse.ArgumentParser(description="Personal Library & Reading Tracker")
+    parser = argparse.ArgumentParser(
+        description="Personal Library & Reading Tracker"
+    )
     parser.add_argument("--data", type=Path,
-                        default=Path(__file__).resolve().parent.parent / "data.json",
+                        default=Path(__file__).resolve(
+                        ).parent.parent / "data.json",
                         help="JSON storage path (default: project data.json)")
     args = parser.parse_args()
     try:
@@ -40,7 +43,11 @@ def main() -> int:
                 book = Book(
                     title=input("Title: "), author=input("Author: "),
                     genre=input("Genre: "), total_pages=int(input("Total pages: ")),
-                    status=input("Status (to-read/reading/finished) [to-read]: ").strip() or "to-read",
+                    status=(input(
+                        "Status (to-read/reading/finished) [to-read]: ")
+                        .strip()
+                        or "to-read"
+                    ),
                 )
                 library.add(book)
                 print(f"Book added. ID: {book.id}")
@@ -64,8 +71,10 @@ def main() -> int:
                 stats = library.statistics()
                 print(f"Total books: {stats['total_books']}")
                 print(f"Finished this year: {stats['finished_this_year']}")
-                print(f"Average pages per finished book: {stats['average_pages_per_finished_book']:.2f}")
-                print("Favorite genre(s): " + (", ".join(stats['favorite_genres']) or "None yet"))
+                print(
+                    f"Average pages per finished book: {stats['average_pages_per_finished_book']:.2f}")
+                print("Favorite genre(s): " +
+                      (", ".join(stats['favorite_genres']) or "None yet"))
             elif choice == "9":
                 print("Goodbye!")
                 return 0
