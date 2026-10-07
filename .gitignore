@@ -1,6 +1,15 @@
-.venv/
+# Python bytecode & cache
 __pycache__/
 *.py[cod]
-.library-*.tmp
-# Keep personal reading data out of version control.
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Project data file (excluded per README instructions)
 data.json
+.library-*.tmp

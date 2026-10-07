@@ -2,7 +2,8 @@
 from collections import Counter
 from copy import deepcopy
 from datetime import date
-from .models import Book, BookNotFoundError
+
+from .models import Book, BookNotFoundError, ValidationError
 from .storage import Storage
 
 
@@ -15,9 +16,14 @@ class Library:
 
     def books(self, status: str = "", genre: str = "") -> list[Book]:
         """Return copies so callers cannot bypass collection persistence."""
-        return deepcopy([b for b in self._books
-                         if (not status or b.status == status)
-                         and (not genre or b.genre.casefold() == genre.casefold())])
+        return deepcopy(
+            [
+                b
+                for b in self._books
+                if (not status or b.status == status)
+                and (not genre or b.genre.casefold() == genre.casefold())
+            ]
+        )
 
     def _commit(self, books: list[Book]) -> None:
         self._storage.save(books)
@@ -25,7 +31,6 @@ class Library:
 
     def add(self, book: Book) -> None:
         """Add a book with a unique ID."""
-        from .models import ValidationError
         if any(b.id == book.id for b in self._books):
             raise ValidationError("A book with this ID already exists.")
         self._commit(self._books + [deepcopy(book)])
@@ -38,7 +43,6 @@ class Library:
 
     def update(self, book_id: str, action: str, page: int = 0) -> None:
         """Apply a supported state change on a copy before persisting."""
-        from .models import ValidationError
         books = deepcopy(self._books)
         book = books[self._index(book_id)]
         if action == "start":
@@ -60,13 +64,13 @@ class Library:
     def search(self, query: str) -> list[Book]:
         """Match a case-insensitive substring in title or author."""
         query = query.casefold().strip()
-        return deepcopy([
-            book for book in self._books
-            if (
-                query in book.title.casefold()
-                or query in book.author.casefold()
-            )
-        ])
+        return deepcopy(
+            [
+                book
+                for book in self._books
+                if (query in book.title.casefold() or query in book.author.casefold())
+            ]
+        )
 
     def statistics(self) -> dict:
         """Count finished books and pages; genre ties return all winners."""
@@ -78,10 +82,14 @@ class Library:
             "finished_this_year": sum(
                 date.fromisoformat(book.finish_date).year == date.today().year
                 for book in finished
+                if book.finish_date
             ),
             "average_pages_per_finished_book": (
-                sum(book.total_pages for book in finished) /
-                len(finished) if finished else 0
+                sum(book.total_pages for book in finished) / len(finished)
+                if finished
+                else 0
             ),
-            "favorite_genres": sorted(g for g, count in genres.items() if count == highest),
+            "favorite_genres": sorted(
+                g for g, count in genres.items() if count == highest
+            ),
         }

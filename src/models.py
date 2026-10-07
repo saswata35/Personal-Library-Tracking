@@ -1,5 +1,5 @@
 """Validated book model and domain exceptions."""
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import date
 from uuid import uuid4
 
@@ -39,18 +39,20 @@ class Book:
             if not isinstance(value, str) or not value.strip():
                 raise ValidationError(f"{name} must be nonempty text.")
             setattr(self, name, value.strip())
+
+        # Disallow bool (since bool is a subclass of int in Python)
         if type(self.total_pages) is not int or self.total_pages <= 0:
             raise ValidationError("Total pages must be a positive integer.")
+
         if (
             type(self.current_page) is not int
-            or not 0 <= self.current_page <= self.total_pages
+            or not (0 <= self.current_page <= self.total_pages)
         ):
-            raise ValidationError(
-                "Current page must be between 0 and total pages."
-            )
+            raise ValidationError("Current page must be between 0 and total pages.")
+
         if self.status not in ("to-read", "reading", "finished"):
-            raise ValidationError(
-                "Status must be to-read, reading or finished.")
+            raise ValidationError("Status must be to-read, reading or finished.")
+
         if self.status == "finished":
             self.current_page = self.total_pages
             self.finish_date = self.finish_date or date.today().isoformat()
@@ -62,8 +64,8 @@ class Book:
                     "Finish date must be a valid nonfuture ISO date."
                 ) from exc
         elif self.finish_date is not None:
-            raise ValidationError(
-                "Only finished books can have a finish date.")
+            raise ValidationError("Only finished books can have a finish date.")
+
         if self.status == "to-read" and self.current_page != 0:
             raise ValidationError("A to-read book must have zero progress.")
 
@@ -76,9 +78,8 @@ class Book:
     def update_progress(self, page: int) -> None:
         """Set an absolute page number for a book currently being read."""
         if self.status != "reading":
-            raise ValidationError(
-                "Start reading the book before updating progress.")
-        if type(page) is not int or not 0 <= page <= self.total_pages:
+            raise ValidationError("Start reading the book before updating progress.")
+        if type(page) is not int or not (0 <= page <= self.total_pages):
             raise ValidationError("Page must be between 0 and total pages.")
         self.current_page = page
 

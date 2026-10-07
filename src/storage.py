@@ -4,6 +4,7 @@ import os
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
+
 from .models import Book, StorageError, ValidationError
 
 
@@ -39,27 +40,32 @@ class JSONStorage(Storage):
         except FileNotFoundError:
             return []
         except (
-            OSError, UnicodeError, ValueError, TypeError, ValidationError
+            OSError,
+            UnicodeError,
+            ValueError,
+            TypeError,
+            ValidationError,
         ) as exc:
-            raise StorageError(
-                f"Cannot load {self.path}: {exc}"
-            ) from exc
+            raise StorageError(f"Cannot load {self.path}: {exc}") from exc
 
     def save(self, books: list[Book]) -> None:
         temporary = None
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with tempfile.NamedTemporaryFile(
-                mode="w", encoding="utf-8", dir=self.path.parent,
-                prefix=".library-", suffix=".tmp", delete=False,
+                mode="w",
+                encoding="utf-8",
+                dir=self.path.parent,
+                prefix=".library-",
+                suffix=".tmp",
+                delete=False,
             ) as stream:
                 temporary = stream.name
                 json.dump(
-                    {"version": 1, "books": [b.to_dict() for b in books]
-                     },
+                    {"version": 1, "books": [b.to_dict() for b in books]},
                     stream,
                     ensure_ascii=False,
-                    indent=2
+                    indent=2,
                 )
                 stream.write("\n")
                 stream.flush()
